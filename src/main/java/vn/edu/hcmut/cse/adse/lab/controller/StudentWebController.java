@@ -18,6 +18,15 @@ public class StudentWebController {
 @Autowired
 private StudentService service;
 // Route: GET http://localhost:8080/students
+
+@RestController
+public class HomeController {
+    @GetMapping("/")
+    public String home() {
+        return "Student Management API is running";
+    }
+}
+
 @GetMapping
 public String getAllStudents(
         @RequestParam(required = false) String keyword,
