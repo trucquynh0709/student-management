@@ -1,19 +1,310 @@
-<h2>Chi Tiết Sinh Viên</h2>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Sinh Viên</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-<p>ID: <span th:text="${student.id}"></span></p>
-<p>Tên: <span th:text="${student.name}"></span></p>
-<p>Email: <span th:text="${student.email}"></span></p>
-<p>Tuổi: <span th:text="${student.age}"></span></p>
+        :root {
+            --ink: #1a1a1a;
+            --muted: #6b6b6b;
+            --accent: #2d5a3d;
+            --accent-light: #4a8c62;
+            --cream: #f7f4ef;
+            --rule: #d8d0c4;
+            --danger: #c0392b;
+            --danger-light: #e74c3c;
+            --surface: #ffffff;
+        }
 
-<a th:href="@{/students/edit/{id}(id=${student.id})}">
-    Chỉnh Sửa
-</a>
+        body {
+            background: var(--cream);
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            padding: 3rem 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-<form th:action="@{/students/delete/{id}(id=${student.id})}"
-      method="post"
-      onsubmit="return confirm('Bạn chắc chắn muốn xóa?');">
-    <button type="submit">Xóa</button>
-</form>
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
 
-<br>
-<a href="/students">Quay lại</a>
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            border: 1px solid var(--rule);
+            top: -180px;
+            right: -180px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        /* ── Back link ── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            text-decoration: none;
+            margin-bottom: 2.5rem;
+            transition: color 0.2s;
+        }
+
+        .back-link::before {
+            content: '←';
+            transition: transform 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        .back-link:hover::before {
+            transform: translateX(-3px);
+        }
+
+        /* ── Header ── */
+        .eyebrow {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .eyebrow::before {
+            content: '';
+            display: block;
+            height: 1px;
+            width: 32px;
+            background: var(--accent);
+            opacity: 0.5;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 300;
+            line-height: 1.2;
+            color: var(--ink);
+            margin-bottom: 2rem;
+        }
+
+        h1 em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        /* ── Card ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--rule);
+            margin-bottom: 1.5rem;
+        }
+
+        .field {
+            display: flex;
+            align-items: baseline;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f0ebe3;
+        }
+
+        .field:last-child {
+            border-bottom: none;
+        }
+
+        .field-label {
+            font-size: 0.68rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--muted);
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .field-value {
+            font-size: 0.95rem;
+            color: var(--ink);
+        }
+
+        .field-value.id-val {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            color: var(--muted);
+        }
+
+        .field-value.name-val {
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        /* ── Actions ── */
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-edit {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.65rem 1.5rem;
+            background: var(--accent);
+            color: var(--cream);
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn-edit:hover {
+            background: var(--accent-light);
+            transform: translateY(-1px);
+        }
+
+        .divider-v {
+            width: 1px;
+            height: 20px;
+            background: var(--rule);
+        }
+
+        .btn-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.65rem 1.5rem;
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* ── Footer ── */
+        .footer-rule {
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--rule);
+            font-size: 0.68rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .footer-rule::before, .footer-rule::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--rule);
+        }
+
+        .deco-line {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.3;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <a class="back-link" href="/students">Quay lại danh sách</a>
+
+    <p class="eyebrow">Hồ sơ sinh viên</p>
+    <h1>Chi tiết Sinh Viên</h1>
+
+    <div class="card">
+        <div class="field">
+            <span class="field-label">ID</span>
+            <span class="field-value id-val" th:text="${student.id}"></span>
+        </div>
+        <div class="field">
+            <span class="field-label">Họ tên</span>
+            <span class="field-value name-val" th:text="${student.name}"></span>
+        </div>
+        <div class="field">
+            <span class="field-label">Email</span>
+            <span class="field-value" th:text="${student.email}"></span>
+        </div>
+        <div class="field">
+            <span class="field-label">Tuổi</span>
+            <span class="field-value" th:text="${student.age}"></span>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a class="btn-edit" th:href="@{/students/edit/{id}(id=${student.id})}">
+            Chỉnh sửa
+        </a>
+
+        <div class="divider-v"></div>
+
+        <form th:action="@{/students/delete/{id}(id=${student.id})}"
+              method="post"
+              onsubmit="return confirm('Bạn chắc chắn muốn xóa sinh viên này?');">
+            <button class="btn-delete" type="submit">Xóa</button>
+        </form>
+    </div>
+
+    <div class="footer-rule">Student Management System</div>
+</div>
+
+<div class="deco-line"></div>
+
+</body>
+</html>

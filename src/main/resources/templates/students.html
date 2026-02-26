@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% comment %} <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"> <!-- Khai bao namespace de dung th:* -->
 <head>
     <meta charset="UTF-8">
@@ -49,5 +49,396 @@
             </tr>
         </tbody>
     </table>
+</body>
+</html> {% endcomment %}
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Sinh Viên</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ink: #1a1a1a;
+            --muted: #6b6b6b;
+            --accent: #2d5a3d;
+            --accent-light: #4a8c62;
+            --cream: #f7f4ef;
+            --rule: #d8d0c4;
+            --danger: #c0392b;
+            --surface: #ffffff;
+        }
+
+        body {
+            background: var(--cream);
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            padding: 3rem 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            border: 1px solid var(--rule);
+            bottom: -200px;
+            left: -150px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        /* ── Header ── */
+        .header {
+            margin-bottom: 2.5rem;
+        }
+
+        .eyebrow {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .eyebrow::before {
+            content: '';
+            display: block;
+            height: 1px;
+            width: 32px;
+            background: var(--accent);
+            opacity: 0.5;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 300;
+            line-height: 1.2;
+            color: var(--ink);
+        }
+
+        h1 em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            border-radius:18px;
+        }
+
+        .btn-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.4rem;
+            background: var(--accent);
+            color: var(--cream);
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: background 0.2s ease, transform 0.2s ease;
+            white-space: nowrap;
+            border-radius: 18px;
+        }
+
+        .btn-add::before {
+            content: '+';
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .btn-add:hover {
+            background: var(--accent-light);
+            transform: translateY(-1px);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 0;
+            flex: 1;
+            min-width: 220px;
+            max-width: 380px;
+        }
+
+        .search-form input {
+            flex: 1;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--rule);
+            border-right: none;
+            background: var(--surface);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            color: var(--ink);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-form input::placeholder { color: var(--rule); }
+        .search-form input:focus { border-color: var(--accent); }
+
+        .search-form button {
+            padding: 0.6rem 1rem;
+            background: var(--accent);
+            color: var(--cream);
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-form button:hover { background: var(--accent-light); }
+
+        /* ── Table ── */
+        .table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--rule);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            border-bottom: 1px solid var(--rule);
+        }
+
+        th {
+            font-size: 0.68rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 1rem 1.25rem;
+            text-align: left;
+            background: var(--cream);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #f0ebe3;
+            transition: background 0.15s;
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #faf8f4; }
+
+        td {
+            padding: 0.9rem 1.25rem;
+            font-size: 0.88rem;
+            color: var(--ink);
+            vertical-align: middle;
+        }
+
+        .td-id {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            color: var(--muted);
+        }
+
+        .td-name {
+            font-weight: 500;
+        }
+
+        .td-email {
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .td-age { color: var(--muted); }
+
+        .age-warning {
+            color: var(--danger) !important;
+            font-weight: 500;
+        }
+
+        .link-detail {
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            cursor: pointer;
+            transition: color 0.2s, gap 0.2s;
+        }
+
+        .link-detail::after {
+            content: '→';
+            transition: transform 0.2s;
+        }
+
+        .link-detail:hover {
+            color: var(--accent-light);
+        }
+
+        .link-detail:hover::after {
+            transform: translateX(3px);
+        }
+
+        /* ── Empty state ── */
+        .empty {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .empty-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.3;
+        }
+
+        /* ── Footer divider ── */
+        .footer-rule {
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--rule);
+            font-size: 0.68rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .footer-rule::before, .footer-rule::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--rule);
+        }
+
+        .deco-line {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.3;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <div class="header">
+        <p class="eyebrow">Hệ thống quản lý</p>
+        <h1>Danh sách Sinh Viên</h1>
+    </div>
+
+    <div class="toolbar">
+        <a class="btn-add" th:href="@{/students/new}">Thêm sinh viên</a>
+
+        <form class="search-form" action="/students" method="GET">
+            <input type="text" name="keyword"
+                   th:value="${keyword}"
+                   placeholder="Tìm theo tên..."/>
+            <button type="submit">Tìm</button>
+        </form>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Họ và Tên</th>
+                    <th>Email</th>
+                    <th>Tuổi</th>
+                    <th>Chi tiết</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="student : ${dsSinhVien}">
+                    <td class="td-id" th:text="${student.id}">1</td>
+                    <td class="td-name"
+                        th:text="${student.name}"
+                        th:classappend="${student.age < 18} ? 'age-warning' : ''">
+                        Nguyễn Văn A
+                    </td>
+                    <td class="td-email" th:text="${student.email}">email@example.com</td>
+                    <td class="td-age"
+                        th:text="${student.age}"
+                        th:classappend="${student.age < 18} ? 'age-warning' : ''">
+                        20
+                    </td>
+                    <td>
+                        <a class="link-detail"
+                           th:href="@{/students/{id}(id=${student.id})}">
+                            Xem
+                        </a>
+                    </td>
+                </tr>
+
+                <!-- Empty state (hiện khi dsSinhVien rỗng) -->
+                <tr th:if="${#lists.isEmpty(dsSinhVien)}">
+                    <td colspan="5">
+                        <div class="empty">
+                            <div class="empty-icon">∅</div>
+                            Không tìm thấy sinh viên nào.
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer-rule">Student Management System</div>
+</div>
+
+<div class="deco-line"></div>
+
 </body>
 </html>

@@ -1,72 +1,71 @@
 package vn.edu.hcmut.cse.adse.lab.controller;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller; // Luu y: su dung @Controller, KHONG dung → @RestController
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import vn.edu.hcmut.cse.adse.lab.service.StudentService;
-import vn.edu.hcmut.cse.adse.lab.entity.Student;
-import org.springframework.web.bind.annotation.RequestParam;
-import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.hcmut.cse.adse.lab.entity.Student;
+import vn.edu.hcmut.cse.adse.lab.service.StudentService;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/students")
 public class StudentWebController {
-@Autowired
-private StudentService service;
-// Route: GET http://localhost:8080/students
 
+    @Autowired
+    private StudentService service;
 
-@GetMapping
-public String getAllStudents(
-        @RequestParam(required = false) String keyword,
-        Model model) {
+    @GetMapping
+    public String getAllStudents(
+            @RequestParam(required = false) String keyword,
+            Model model) {
 
-    List<Student> students;
+        List<Student> students = (keyword != null && !keyword.isBlank())
+                ? service.searchByName(keyword)
+                : service.getAll();
 
-    if (keyword != null && !keyword.isEmpty()) {
-        students = service.searchByName(keyword);
-    } else {
-        students = service.getAll();
+        model.addAttribute("dsSinhVien", students);
+        model.addAttribute("keyword", keyword);
+        return "students";
     }
 
-    model.addAttribute("dsSinhVien", students);
-    model.addAttribute("keyword", keyword); // để giữ lại text khi search
-    return "students";
-}
+    @GetMapping("/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        model.addAttribute("student", service.getById(id));
+        return "student-detail";
+    }
 
-@GetMapping("/{id}")
-public String detail(@PathVariable String id, Model model) {
-    Student student = service.getById(id);
-    model.addAttribute("student", student);
-    return "student-detail";
-}
+    @GetMapping("/new")
+    public String createForm(Model model) {
+        model.addAttribute("student", new Student());
+        return "student-form";
+    }
 
-@GetMapping("/new")
-public String createForm(Model model) {
-    model.addAttribute("student", new Student());
-    return "student-form";
-}
+    // Tạo mới
+    @PostMapping
+    public String create(@ModelAttribute Student student) {
+        service.save(student);
+        return "redirect:/students";
+    }
 
-@PostMapping
-public String save(@ModelAttribute Student student) {
-    service.save(student);
-    return "redirect:/students";
-}
+    @GetMapping("/edit/{id}")
+    public String editForm(@PathVariable Long id, Model model) {
+        model.addAttribute("student", service.getById(id));
+        return "student-form";
+    }
 
-@GetMapping("/edit/{id}")
-public String editForm(@PathVariable String id, Model model) {
-    model.addAttribute("student", service.getById(id));
-    return "student-form";
-}
+    // Cập nhật — nhận id từ path để chắc chắn không bị mất
+    @PostMapping("/edit/{id}")
+    public String update(@PathVariable Long id, @ModelAttribute Student student) {
+        student.setId(id);
+        service.save(student);
+        return "redirect:/students";
+    }
 
-@PostMapping("/delete/{id}")
-public String delete(@PathVariable String id) {
-    service.delete(id);
-    return "redirect:/students";
-}
-
+    @PostMapping("/delete/{id}")
+    public String delete(@PathVariable Long id) {
+        service.delete(id);
+        return "redirect:/students";
+    }
 }
