@@ -16,11 +16,7 @@ public class StudentController {
     private StudentService service;
 
     // GET http://localhost:8081/api/students
-    @GetMapping("/")
-    public String home() {
-        return "Student Management API is running";
-    }
-    
+   
     @GetMapping
     public List<Student> getAllStudents() {
         return service.getAll();
