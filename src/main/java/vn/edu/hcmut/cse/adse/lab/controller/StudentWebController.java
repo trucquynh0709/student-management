@@ -31,7 +31,7 @@ public class StudentWebController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model) {
+    public String detail(@PathVariable String id, Model model) {
         model.addAttribute("student", service.getById(id));
         return "student-detail";
     }
@@ -42,7 +42,6 @@ public class StudentWebController {
         return "student-form";
     }
 
-    // Tạo mới
     @PostMapping
     public String create(@ModelAttribute Student student) {
         service.save(student);
@@ -55,16 +54,15 @@ public class StudentWebController {
         return "student-form";
     }
 
-    // Cập nhật — nhận id từ path để chắc chắn không bị mất
     @PostMapping("/edit/{id}")
-    public String update(@PathVariable Long id, @ModelAttribute Student student) {
+    public String update(@PathVariable String id, @ModelAttribute Student student) {
         student.setId(id);
         service.save(student);
         return "redirect:/students";
     }
 
     @PostMapping("/delete/{id}")
-    public String delete(@PathVariable Long id) {
+    public String delete(@PathVariable String id) {
         service.delete(id);
         return "redirect:/students";
     }
