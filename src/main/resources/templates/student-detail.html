@@ -56,7 +56,7 @@
             position: relative;
             z-index: 1;
             max-width: 600px;
-            
+            margin: 0 auto;
             animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
@@ -185,6 +185,7 @@
             text-decoration: none;
             font-size: 0.78rem;
             font-weight: 500;
+            border-radius:6px;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             transition: background 0.2s, transform 0.2s;
@@ -213,6 +214,7 @@
             font-size: 0.78rem;
             font-weight: 500;
             letter-spacing: 0.08em;
+            border-radius:6px;
             text-transform: uppercase;
             cursor: pointer;
             transition: background 0.2s, color 0.2s, transform 0.2s;
@@ -257,6 +259,96 @@
             from { opacity: 0; transform: translateY(20px); }
             to   { opacity: 1; transform: translateY(0); }
         }
+
+        /* ── Modal ── */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 26, 26, 0.45);
+            backdrop-filter: blur(3px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .modal-backdrop.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--rule);
+            padding: 2rem 2rem 1.75rem;
+            max-width: 380px;
+            width: 90%;
+            transform: translateY(12px);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-backdrop.open .modal {
+            transform: translateY(0);
+        }
+        .modal-icon {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--danger);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--danger);
+            font-size: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--ink);
+            margin-bottom: 0.5rem;
+        }
+        .modal-desc {
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 1.75rem;
+        }
+        .modal-desc strong { color: var(--ink); font-weight: 500; }
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+        .btn-modal-cancel {
+            padding: 0.6rem 1.2rem;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--rule);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-modal-cancel:hover { border-color: var(--ink); color: var(--ink); }
+        .btn-modal-confirm {
+            padding: 0.6rem 1.2rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-modal-confirm:hover { background: var(--danger-light); }
     </style>
 </head>
 <body>
@@ -296,15 +388,47 @@
 
         <form th:action="@{/students/delete/{id}(id=${student.id})}"
               method="post"
-              onsubmit="return confirm('Bạn chắc chắn muốn xóa sinh viên này?');">
-            <button class="btn-delete" type="submit">Xóa</button>
+              id="delete-form">
+            <button class="btn-delete" type="button" onclick="openModal()">Xóa</button>
         </form>
     </div>
 
     <div class="footer-rule">Student Management System</div>
 </div>
 
+<!-- Modal xác nhận xóa -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="handleBackdropClick(event)">
+    <div class="modal">
+        <div class="modal-icon">✕</div>
+        <p class="modal-title">Xác nhận xóa</p>
+        <p class="modal-desc">
+            Bạn chắc chắn muốn xóa sinh viên
+            <strong th:text="${student.name}"></strong>?
+            Hành động này không thể hoàn tác.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" onclick="closeModal()">Hủy</button>
+            <button class="btn-modal-confirm" onclick="document.getElementById('delete-form').submit()">Xóa</button>
+        </div>
+    </div>
+</div>
+
 <div class="deco-line"></div>
+
+<script>
+    function openModal() {
+        document.getElementById('modal-backdrop').classList.add('open');
+    }
+    function closeModal() {
+        document.getElementById('modal-backdrop').classList.remove('open');
+    }
+    function handleBackdropClick(e) {
+        if (e.target === document.getElementById('modal-backdrop')) closeModal();
+    }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
 
 </body>
 </html>
