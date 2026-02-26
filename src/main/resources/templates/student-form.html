@@ -1,0 +1,21 @@
+<h2>Form Sinh Viên</h2>
+
+<form th:action="@{/students}" method="post"
+      th:object="${student}">
+
+    <input type="hidden" th:field="*{id}" />
+
+    <label>Mã sinh viên:</label>
+    <input type="text" th:field="*{id}" required />
+
+    <label>Tên:</label>
+    <input type="text" th:field="*{name}" />
+
+    <label>Email:</label>
+    <input type="text" th:field="*{email}" />
+
+    <label>Tuổi:</label>
+    <input type="number" th:field="*{age}" />
+
+    <button type="submit">Lưu</button>
+</form>

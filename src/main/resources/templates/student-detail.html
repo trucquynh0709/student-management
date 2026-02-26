@@ -1,0 +1,19 @@
+<h2>Chi Tiết Sinh Viên</h2>
+
+<p>ID: <span th:text="${student.id}"></span></p>
+<p>Tên: <span th:text="${student.name}"></span></p>
+<p>Email: <span th:text="${student.email}"></span></p>
+<p>Tuổi: <span th:text="${student.age}"></span></p>
+
+<a th:href="@{/students/edit/{id}(id=${student.id})}">
+    Chỉnh Sửa
+</a>
+
+<form th:action="@{/students/delete/{id}(id=${student.id})}"
+      method="post"
+      onsubmit="return confirm('Bạn chắc chắn muốn xóa?');">
+    <button type="submit">Xóa</button>
+</form>
+
+<br>
+<a href="/students">Quay lại</a>
