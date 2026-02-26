@@ -50,7 +50,7 @@ public class StudentWebController {
     }
 
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
+    public String editForm(@PathVariable string id, Model model) {
         model.addAttribute("student", service.getById(id));
         return "student-form";
     }
