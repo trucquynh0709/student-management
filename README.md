@@ -66,7 +66,7 @@ spring.jpa.hibernate.ddl-auto=update
 ![Trang thêm danh sách sinh viên](images/add-students.png)
 
 ## 3. Trang xem chi tiết sinh viên  
-![Trang xem chi tiết sinh viên](images/students.png)
+![Trang xem chi tiết sinh viên](images/student-detail.png)
 ---
 
 # Lab 5 – Link Deploy
